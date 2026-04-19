@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0a0f1e" />
+    <title>Clima Agora</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="clima.css" />
+  </head>
+  <body>
+    <div class="aurora"></div>
+    <div class="app">
+      <div class="header">
+        <div class="header-title">Clima Agora</div>
+        <button
+          class="btn-refresh"
+          id="btnRefresh"
+          title="Atualizar"
+          onclick="loadWeather()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div id="stateLoading" class="state-card">
+        <div class="state-icon">🌐</div>
+        <div class="state-title">Localizando...</div>
+        <div class="state-msg">
+          Obtendo sua localização<br />e dados climáticos
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="stateError" class="state-card hidden">
+        <div class="state-icon" id="errIcon">⚠️</div>
+        <div class="state-title" id="errTitle">Ops!</div>
+        <div class="state-msg" id="errMsg">
+          Não foi possível obter os dados.
+        </div>
+        <button class="btn-primary" onclick="loadWeather()">
+          Tentar novamente
+        </button>
+      </div>
+
+      <!-- Weather content -->
+      <div id="weatherContent" class="hidden">
+        <div class="main-card">
+          <div class="location-row">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+              />
+            </svg>
+            <div class="location-name" id="locName">—</div>
+          </div>
+          <div class="temp-row">
+            <div>
+              <div class="temp-big" id="tempVal">—</div>
+              <div class="desc-row" id="descVal">—</div>
+              <div class="feels-like" id="feelsLike">Sensação térmica: —</div>
+            </div>
+            <div class="temp-meta">
+              <span class="temp-unit">°C</span>
+              <div class="weather-icon-main" id="mainIcon">🌤</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-label">💧 Umidade</div>
+              <div class="stat-value" id="humidity">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">💨 Vento</div>
+              <div class="stat-value" id="windSpeed">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">👁 Visib.</div>
+              <div class="stat-value" id="visibility">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="mini-card">
+            <div class="mini-card-label"><span>🌡</span> Mín / Máx</div>
+            <div class="mini-card-value" id="minMax">—</div>
+            <div class="mini-card-sub">Hoje</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-label"><span>☁️</span> Nuvens</div>
+            <div class="mini-card-value" id="cloudVal">—</div>
+            <div class="progress-wrap">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  id="cloudBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-label"><span>🧭</span> Pressão</div>
+            <div class="mini-card-value" id="pressureVal">—</div>
+            <div class="mini-card-sub">hPa</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-label"><span>💦</span> Chuva 1h</div>
+            <div class="mini-card-value" id="rainVal">—</div>
+            <div class="mini-card-sub">mm</div>
+          </div>
+        </div>
+
+        <div class="sun-card">
+          <div class="sun-card-title">☀️ Sol hoje</div>
+          <div class="sun-row">
+            <div class="sun-item">
+              <div class="sun-label">Nascer</div>
+              <div class="sun-time" id="sunriseTime">—</div>
+            </div>
+            <div class="sun-arc-wrap">
+              <svg
+                class="sun-arc-svg"
+                viewBox="0 0 120 60"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 55 Q60 -5 110 55"
+                  stroke="rgba(255,255,255,0.1)"
+                  stroke-width="2"
+                  stroke-dasharray="4 3"
+                />
+                <path
+                  id="sunArcFill"
+                  d="M10 55 Q60 -5 110 55"
+                  stroke="url(#arcGrad)"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-dasharray="200"
+                  stroke-dashoffset="200"
+                />
+                <circle
+                  id="sunDot"
+                  cx="10"
+                  cy="55"
+                  r="5"
+                  fill="#ffb347"
+                  filter="url(#glow)"
+                />
+                <defs>
+                  <linearGradient
+                    id="arcGrad"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="0"
+                    gradientUnits="objectBoundingBox"
+                  >
+                    <stop offset="0%" stop-color="#ff9800" />
+                    <stop offset="100%" stop-color="#4fc3f7" />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+              </svg>
+            </div>
+            <div class="sun-item">
+              <div class="sun-label">Pôr</div>
+              <div class="sun-time" id="sunsetTime">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="update-time" id="updateTime"></div>
+      </div>
+    </div>
+
+    <script>
+      const API_KEY = ""; // Deixe vazio para usar modo demo
+
+      const WEATHER_CODES = {
+        200: "⛈",
+        201: "⛈",
+        202: "⛈",
+        210: "🌩",
+        211: "🌩",
+        212: "🌩",
+        221: "🌩",
+        230: "⛈",
+        231: "⛈",
+        232: "⛈",
+        300: "🌦",
+        301: "🌦",
+        302: "🌧",
+        310: "🌦",
+        311: "🌧",
+        312: "🌧",
+        313: "🌦",
+        314: "🌧",
+        321: "🌦",
+        500: "🌧",
+        501: "🌧",
+        502: "🌧",
+        503: "🌧",
+        504: "🌧",
+        511: "🌨",
+        520: "🌦",
+        521: "🌦",
+        522: "🌧",
+        531: "🌦",
+        600: "🌨",
+        601: "❄️",
+        602: "❄️",
+        611: "🌨",
+        612: "🌨",
+        613: "🌨",
+        615: "🌨",
+        616: "🌨",
+        620: "🌨",
+        621: "❄️",
+        622: "❄️",
+        701: "🌫",
+        711: "🌫",
+        721: "🌫",
+        731: "🌫",
+        741: "🌫",
+        751: "🌫",
+        761: "🌫",
+        762: "🌋",
+        771: "💨",
+        781: "🌪",
+        800: "☀️",
+        801: "🌤",
+        802: "⛅️",
+        803: "🌥",
+        804: "☁️",
+      };
+
+      function show(id) {
+        document.getElementById(id).classList.remove("hidden");
+      }
+      function hide(id) {
+        document.getElementById(id).classList.add("hidden");
+      }
+      function set(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      }
+
+      function fmtTime(unix, tz) {
+        return new Date(unix * 1000).toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: tz || undefined,
+        });
+      }
+
+      function animateSunArc(progress) {
+        const arc = document.getElementById("sunArcFill");
+        const dot = document.getElementById("sunDot");
+        const len = 200;
+        arc.style.strokeDashoffset =
+          len - len * Math.max(0, Math.min(1, progress));
+
+        // Move dot along the arc path
+        const t = Math.max(0, Math.min(1, progress));
+        const x = 10 + t * 100;
+        const y = 55 + -4 * t * (1 - t) * 240;
+        dot.setAttribute("cx", x);
+        dot.setAttribute("cy", Math.max(5, Math.min(58, y)));
+      }
+
+      function renderWeather(d) {
+        const tzName = d.timezone || undefined;
+        const icon = WEATHER_CODES[d.weather[0].id] || "🌡";
+        const sunrise = d.sys.sunrise;
+        const sunset = d.sys.sunset;
+        const now = Math.floor(Date.now() / 1000);
+        const dayProgress =
+          now < sunrise
+            ? 0
+            : now > sunset
+              ? 1
+              : (now - sunrise) / (sunset - sunrise);
+
+        set("locName", `${d.name}, ${d.sys.country}`);
+        set("tempVal", Math.round(d.main.temp));
+        set("descVal", d.weather[0].description);
+        set(
+          "feelsLike",
+          `Sensação térmica: ${Math.round(d.main.feels_like)}°C`,
+        );
+        document.getElementById("mainIcon").textContent = icon;
+
+        set("humidity", `${d.main.humidity}%`);
+        set("windSpeed", `${Math.round(d.wind.speed * 3.6)}km/h`);
+        const vis = d.visibility
+          ? `${(d.visibility / 1000).toFixed(0)}km`
+          : "N/D";
+        set("visibility", vis);
+
+        set(
+          "minMax",
+          `${Math.round(d.main.temp_min)}° / ${Math.round(d.main.temp_max)}°`,
+        );
+        set("cloudVal", `${d.clouds.all}%`);
+        document.getElementById("cloudBar").style.width = `${d.clouds.all}%`;
+        set("pressureVal", d.main.pressure);
+        const rain = d.rain && d.rain["1h"] ? d.rain["1h"].toFixed(1) : "0.0";
+        set("rainVal", rain);
+
+        set("sunriseTime", fmtTime(sunrise, tzName));
+        set("sunsetTime", fmtTime(sunset, tzName));
+
+        // Animate sun arc
+        setTimeout(() => animateSunArc(dayProgress), 300);
+
+        const now2 = new Date();
+        set(
+          "updateTime",
+          `Atualizado às ${now2.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+        );
+
+        hide("stateLoading");
+        hide("stateError");
+        show("weatherContent");
+      }
+
+      function showError(title, msg, icon = "⚠️") {
+        set("errTitle", title);
+        set("errMsg", msg);
+        document.getElementById("errIcon").textContent = icon;
+        hide("stateLoading");
+        hide("weatherContent");
+        show("stateError");
+      }
+
+      // ---- Demo data (used when no API key) ----
+      function loadDemo() {
+        const now = Math.floor(Date.now() / 1000);
+        const hour = new Date().getHours();
+        const sunrise = now - hour * 3600 + 6 * 3600;
+        const sunset = now - hour * 3600 + 18 * 3600;
+
+        const demo = {
+          name: "São Paulo",
+          sys: { country: "BR", sunrise, sunset },
+          timezone: "America/Sao_Paulo",
+          weather: [{ id: 801, description: "poucas nuvens" }],
+          main: {
+            temp: 24.5,
+            feels_like: 25.1,
+            temp_min: 19,
+            temp_max: 28,
+            humidity: 68,
+            pressure: 1014,
+          },
+          wind: { speed: 3.5 },
+          clouds: { all: 20 },
+          visibility: 10000,
+          rain: {},
+        };
+        renderWeather(demo);
+
+        // Show demo notice
+        const note = document.createElement("div");
+        note.style.cssText =
+          "text-align:center;font-size:11px;color:rgba(232,234,240,0.3);margin-top:-8px;";
+        note.textContent =
+          "⚡ Modo demo — insira uma API key do OpenWeatherMap para dados reais";
+        document.querySelector(".app").appendChild(note);
+      }
+
+      async function fetchWeather(lat, lon) {
+        if (!API_KEY) {
+          loadDemo();
+          return;
+        }
+
+        try {
+          const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
+          const res = await fetch(url);
+          if (!res.ok) {
+            if (res.status === 401) throw new Error("API key inválida");
+            throw new Error(`Erro ${res.status}`);
+          }
+          const data = await res.json();
+          renderWeather(data);
+        } catch (e) {
+          showError(
+            "Erro na API",
+            e.message || "Não foi possível obter dados climáticos.",
+            "🌐",
+          );
+        }
+      }
+
+      function loadWeather() {
+        hide("weatherContent");
+        hide("stateError");
+        show("stateLoading");
+
+        const btn = document.getElementById("btnRefresh");
+        btn.classList.add("spinning");
+        setTimeout(() => btn.classList.remove("spinning"), 700);
+
+        if (!navigator.geolocation) {
+          showError(
+            "Sem geolocalização",
+            "Seu navegador não suporta geolocalização.",
+            "📍",
+          );
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          (err) => {
+            const msgs = {
+              1: [
+                "Permissão negada",
+                "Permita o acesso à localização nas configurações do navegador para ver o clima da sua cidade.",
+                "🔒",
+              ],
+              2: [
+                "Localização indisponível",
+                "Não foi possível determinar sua posição atual.",
+                "📡",
+              ],
+              3: [
+                "Tempo esgotado",
+                "A solicitação de localização demorou demais.",
+                "⏱",
+              ],
+            };
+            const [t, m, i] = msgs[err.code] || [
+              "Erro",
+              "Erro desconhecido.",
+              "⚠️",
+            ];
+            showError(t, m, i);
+          },
+          { timeout: 10000, maximumAge: 60000 },
+        );
+      }
+
+      loadWeather();
+    </script>
+  </body>
+</html>
