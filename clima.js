@@ -29,6 +29,18 @@ function set(id, val) {
 }
 
 function fmtTime(unix, tz) {
+  // Se 'tz' for um número (como -10800 vindo do OpenWeatherMap real)
+  if (typeof tz === "number") {
+    // Somamos o deslocamento em segundos ao unix timestamp
+    const dataLocal = new Date((unix + tz) * 1000);
+    return dataLocal.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC" // Forçamos UTC porque já embutimos o fuso no cálculo acima
+    });
+  }
+
+  // Se 'tz' for uma string (como "America/Sao_Paulo" do seu loadDemo) ou indefinido
   return new Date(unix * 1000).toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -97,33 +109,11 @@ function showError(title, msg, icon = "⚠️") {
   show("stateError");
 }
 
-function loadDemo() {
-  const now = Math.floor(Date.now() / 1000);
-  const hour = new Date().getHours();
-  const sunrise = now - hour * 3600 + 6 * 3600;
-  const sunset = now - hour * 3600 + 18 * 3600;
-
-  renderWeather({
-    name: "São Paulo",
-    sys: { country: "BR", sunrise, sunset },
-    timezone: "America/Sao_Paulo",
-    weather: [{ id: 801, description: "poucas nuvens" }],
-    main: { temp: 24.5, feels_like: 25.1, temp_min: 19, temp_max: 28, humidity: 68, pressure: 1014 },
-    wind: { speed: 3.5 },
-    clouds: { all: 20 },
-    visibility: 10000,
-    rain: {},
-  });
-
-  const note = document.createElement("div");
-  note.style.cssText = "text-align:center;font-size:11px;color:rgba(232,234,240,0.3);margin-top:-8px;";
-  note.textContent = "⚡ Modo demo — insira uma API key do OpenWeatherMap para dados reais";
-  document.querySelector(".app").appendChild(note);
-}
 
 async function fetchWeather(lat, lon) {
-  if (!API_KEY) {
-    loadDemo();
+  // Se a chave da API for nula, vazia ou indefinida, dispara o erro.
+  if (!API_KEY || API_KEY.trim() === "") {
+    showError("Erro de Configuração", "A chave da API (API_KEY) está vazia ou não foi configurada.", "🔑");
     return;
   }
 
