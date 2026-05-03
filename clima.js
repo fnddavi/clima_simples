@@ -1,4 +1,4 @@
-const API_KEY = ""; // Deixe vazio para usar modo demo
+const API_KEY = "2d22cc07eb8e5fbdcba276f57ee9a1d8"; // Deixe vazio para usar modo demo
 
 const WEATHER_CODES = {
   200: "⛈", 201: "⛈", 202: "⛈",
