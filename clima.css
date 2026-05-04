@@ -155,10 +155,11 @@ body {
 }
 .temp-big {
   font-family: var(--font-display);
-  font-size: 60px;
+  font-size: 42px; /* Reduzido de 60px para acomodar mais caracteres */
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -1px; /* Suavizado para a barra (/) não engolir os números */
+  white-space: nowrap; /* Garante que os números não pulem para a linha de baixo */
   background: linear-gradient(135deg, #fff 40%, var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
