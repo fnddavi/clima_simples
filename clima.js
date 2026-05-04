@@ -1,4 +1,6 @@
-const API_KEY = "2d22cc07eb8e5fbdcba276f57ee9a1d8"; // Deixe vazio para usar modo demo
+console.log("Clima app loaded");
+
+const API_KEY = "e5681d06a9ea812ed966648cd8224afc";
 
 const WEATHER_CODES = {
   200: "⛈", 201: "⛈", 202: "⛈",
@@ -71,7 +73,7 @@ function renderWeather(d) {
     now < sunrise ? 0 : now > sunset ? 1 : (now - sunrise) / (sunset - sunrise);
 
   set("locName", `${d.name}, ${d.sys.country}`);
-  set("tempVal", Math.round(d.main.temp));
+  set("tempVal", `${Math.round(d.main.temp_max)}° / ${Math.round(d.main.temp_min)}°`);
   set("descVal", d.weather[0].description);
   set("feelsLike", `Sensação térmica: ${Math.round(d.main.feels_like)}°C`);
   document.getElementById("mainIcon").textContent = icon;
@@ -100,6 +102,9 @@ function renderWeather(d) {
   show("weatherContent");
 }
 
+let currentWeatherData = null;
+let tomorrowPageData = null;
+
 function showError(title, msg, icon = "⚠️") {
   set("errTitle", title);
   set("errMsg", msg);
@@ -107,6 +112,183 @@ function showError(title, msg, icon = "⚠️") {
   hide("stateLoading");
   hide("weatherContent");
   show("stateError");
+}
+
+function extractTomorrowFromForecast(forecastData) {
+  if (!forecastData || !forecastData.list || !forecastData.city) return null;
+  const tzOffset = forecastData.city.timezone || 0;
+  const nowLocal = new Date((Date.now() / 1000 + tzOffset) * 1000);
+  const tomorrowLocal = new Date(nowLocal.getTime() + 86400000);
+  const tomorrowDate = tomorrowLocal.toISOString().slice(0, 10);
+
+  const tomorrowItems = forecastData.list.filter((item) => {
+    const itemDate = new Date((item.dt + tzOffset) * 1000).toISOString().slice(0, 10);
+    return itemDate === tomorrowDate;
+  });
+
+  if (!tomorrowItems.length) return null;
+
+  const tempMin = Math.min(...tomorrowItems.map((item) => item.main.temp_min));
+  const tempMax = Math.max(...tomorrowItems.map((item) => item.main.temp_max));
+  const firstWeather = tomorrowItems[0].weather && tomorrowItems[0].weather[0];
+  return {
+    tempMin,
+    tempMax,
+    description: firstWeather ? firstWeather.description : "—",
+  };
+}
+
+function renderTomorrowForecast(data) {
+  if (!data) {
+    set("tomorrowMinMax", "—");
+    set("tomorrowDesc", "Dados indisponíveis");
+    return;
+  }
+
+  set("tomorrowMinMax", `${Math.round(data.tempMin)}° / ${Math.round(data.tempMax)}°`);
+  set("tomorrowDesc", data.description);
+}
+
+function createTomorrowPageData(currentData, forecastData) {
+  if (!currentData || !forecastData || !forecastData.list || !forecastData.city) return null;
+
+  const tzOffset = forecastData.city.timezone || 0;
+  const nowLocal = new Date((Date.now() / 1000 + tzOffset) * 1000);
+  const tomorrowDate = new Date(nowLocal.getTime() + 86400000).toISOString().slice(0, 10);
+
+  const tomorrowItems = forecastData.list.filter((item) => {
+    const itemDate = new Date((item.dt + tzOffset) * 1000).toISOString().slice(0, 10);
+    return itemDate === tomorrowDate;
+  });
+
+  if (!tomorrowItems.length) return null;
+
+  const tempMin = Math.min(...tomorrowItems.map((item) => item.main.temp_min));
+  const tempMax = Math.max(...tomorrowItems.map((item) => item.main.temp_max));
+  const representative = tomorrowItems[Math.floor(tomorrowItems.length / 2)] || tomorrowItems[0];
+  const weather = representative.weather || [{ id: 800, description: "—" }];
+
+  return {
+    name: currentData.name,
+    timezone: forecastData.city.timezone,
+    sys: {
+      country: currentData.sys.country,
+      sunrise: forecastData.city.sunrise,
+      sunset: forecastData.city.sunset,
+    },
+    main: {
+      temp: representative.main.temp,
+      feels_like: representative.main.feels_like,
+      temp_min: tempMin,
+      temp_max: tempMax,
+      humidity: representative.main.humidity,
+      pressure: representative.main.pressure,
+    },
+    weather,
+    clouds: { all: representative.clouds.all },
+    wind: { speed: representative.wind.speed },
+    visibility: representative.visibility,
+    rain: representative.rain,
+  };
+}
+
+function renderTomorrowCard(data) {
+  if (!data) {
+    hide("tomorrowCard");
+    return;
+  }
+
+  const tzName = data.timezone || undefined;
+  const icon = WEATHER_CODES[data.weather[0].id] || "🌡";
+
+  set("tomorrowTempVal", `${Math.round(data.main.temp_max)}° / ${Math.round(data.main.temp_min)}°`);
+  set("tomorrowDescVal", data.weather[0].description);
+  set("tomorrowFeelsLike", `Sensação térmica: ${Math.round(data.main.feels_like)}°C`);
+  document.getElementById("tomorrowMainIcon").textContent = icon;
+
+  set("tomorrowHumidity", `${data.main.humidity}%`);
+  set("tomorrowWindSpeed", `${Math.round(data.wind.speed * 3.6)}km/h`);
+  set("tomorrowVisibility", data.visibility ? `${(data.visibility / 1000).toFixed(0)}km` : "N/D");
+
+  show("tomorrowCard");
+}
+
+function extractTomorrowFromForecast(forecastData) {
+  if (!forecastData || !forecastData.list || !forecastData.city) return null;
+  const tzOffset = forecastData.city.timezone || 0;
+  const nowLocal = new Date((Date.now() / 1000 + tzOffset) * 1000);
+  const tomorrowLocal = new Date(nowLocal.getTime() + 86400000);
+  const tomorrowDate = tomorrowLocal.toISOString().slice(0, 10);
+
+  const tomorrowItems = forecastData.list.filter((item) => {
+    const itemDate = new Date((item.dt + tzOffset) * 1000).toISOString().slice(0, 10);
+    return itemDate === tomorrowDate;
+  });
+
+  if (!tomorrowItems.length) return null;
+
+  const tempMin = Math.min(...tomorrowItems.map((item) => item.main.temp_min));
+  const tempMax = Math.max(...tomorrowItems.map((item) => item.main.temp_max));
+  const firstWeather = tomorrowItems[0].weather && tomorrowItems[0].weather[0];
+  return {
+    tempMin,
+    tempMax,
+    description: firstWeather ? firstWeather.description : "—",
+  };
+}
+
+function renderTomorrowForecast(data) {
+  if (!data) {
+    set("tomorrowMinMax", "—");
+    set("tomorrowDesc", "Dados indisponíveis");
+    return;
+  }
+
+  set("tomorrowMinMax", `${Math.round(data.tempMin)}° / ${Math.round(data.tempMax)}°`);
+  set("tomorrowDesc", data.description);
+}
+
+function createTomorrowPageData(currentData, forecastData) {
+  if (!currentData || !forecastData || !forecastData.list || !forecastData.city) return null;
+
+  const tzOffset = forecastData.city.timezone || 0;
+  const nowLocal = new Date((Date.now() / 1000 + tzOffset) * 1000);
+  const tomorrowDate = new Date(nowLocal.getTime() + 86400000).toISOString().slice(0, 10);
+
+  const tomorrowItems = forecastData.list.filter((item) => {
+    const itemDate = new Date((item.dt + tzOffset) * 1000).toISOString().slice(0, 10);
+    return itemDate === tomorrowDate;
+  });
+
+  if (!tomorrowItems.length) return null;
+
+  const tempMin = Math.min(...tomorrowItems.map((item) => item.main.temp_min));
+  const tempMax = Math.max(...tomorrowItems.map((item) => item.main.temp_max));
+  const representative = tomorrowItems[Math.floor(tomorrowItems.length / 2)] || tomorrowItems[0];
+  const weather = representative.weather || [{ id: 800, description: "—" }];
+
+  return {
+    name: currentData.name,
+    timezone: forecastData.city.timezone,
+    sys: {
+      country: currentData.sys.country,
+      sunrise: forecastData.city.sunrise,
+      sunset: forecastData.city.sunset,
+    },
+    main: {
+      temp: representative.main.temp,
+      feels_like: representative.main.feels_like,
+      temp_min: tempMin,
+      temp_max: tempMax,
+      humidity: representative.main.humidity,
+      pressure: representative.main.pressure,
+    },
+    weather,
+    clouds: { all: representative.clouds.all },
+    wind: { speed: representative.wind.speed },
+    visibility: representative.visibility,
+    rain: representative.rain,
+  };
 }
 
 
@@ -118,13 +300,25 @@ async function fetchWeather(lat, lon) {
   }
 
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      if (res.status === 401) throw new Error("API key inválida");
-      throw new Error(`Erro ${res.status}`);
+    const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
+    const [currentRes, forecastRes] = await Promise.all([fetch(currentUrl), fetch(forecastUrl)]);
+
+    if (!currentRes.ok || !forecastRes.ok) {
+      if (currentRes.status === 401 || forecastRes.status === 401) throw new Error("API key inválida");
+      const status = !currentRes.ok ? currentRes.status : forecastRes.status;
+      throw new Error(`Erro ${status}`);
     }
-    renderWeather(await res.json());
+
+    const currentData = await currentRes.json();
+    const forecastData = await forecastRes.json();
+
+    currentWeatherData = currentData;
+    tomorrowPageData = createTomorrowPageData(currentData, forecastData);
+
+    renderWeather(currentData);
+    renderTomorrowForecast(extractTomorrowFromForecast(forecastData));
+    renderTomorrowCard(tomorrowPageData);
   } catch (e) {
     showError("Erro na API", e.message || "Não foi possível obter dados climáticos.", "🌐");
   }

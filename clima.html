@@ -20,7 +20,7 @@
     <div class="aurora"></div>
     <div class="app">
       <div class="header">
-        <div class="header-title">Clima Agora</div>
+        <div class="header-title" id="pageTitle">Clima Agora</div>
         <button
           class="btn-refresh"
           id="btnRefresh"
@@ -80,7 +80,6 @@
               <div class="feels-like" id="feelsLike">Sensação térmica: —</div>
             </div>
             <div class="temp-meta">
-              <span class="temp-unit">°C</span>
               <div class="weather-icon-main" id="mainIcon">🌤</div>
             </div>
           </div>
@@ -130,6 +129,7 @@
             <div class="mini-card-value" id="rainVal">—</div>
             <div class="mini-card-sub">mm</div>
           </div>
+
         </div>
 
         <div class="sun-card">
@@ -194,6 +194,42 @@
             <div class="sun-item">
               <div class="sun-label">Pôr</div>
               <div class="sun-time" id="sunsetTime">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-card" id="tomorrowCard">
+          <div class="location-row">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+              />
+            </svg>
+            <div class="location-name">Previsão para Amanhã</div>
+          </div>
+          <div class="temp-row">
+            <div>
+              <div class="temp-big" id="tomorrowTempVal">—</div>
+              <div class="desc-row" id="tomorrowDescVal">—</div>
+              <div class="feels-like" id="tomorrowFeelsLike">Sensação térmica: —</div>
+            </div>
+            <div class="temp-meta">
+              <div class="weather-icon-main" id="tomorrowMainIcon">🌤</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-label">💧 Umidade</div>
+              <div class="stat-value" id="tomorrowHumidity">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">💨 Vento</div>
+              <div class="stat-value" id="tomorrowWindSpeed">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">👁 Visib.</div>
+              <div class="stat-value" id="tomorrowVisibility">—</div>
             </div>
           </div>
         </div>
