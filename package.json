@@ -1,0 +1,23 @@
+{
+  "name": "clima-simples",
+  "version": "1.0.0",
+  "description": "Aplicativo de previsão do tempo simples",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+  },
+  "keywords": [
+    "weather",
+    "clima",
+    "openweathermap"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}

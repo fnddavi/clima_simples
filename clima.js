@@ -104,14 +104,16 @@ function renderWeather(data, todaySummary = null) {
   const icon = WEATHER_CODES[data.weather[0].id] || "🌡";
   const sunrise = data.sys.sunrise;
   const sunset = data.sys.sunset;
+  const dailyMin = todaySummary ? todaySummary.tempMin : data.main.temp_min;
+  const dailyMax = todaySummary ? todaySummary.tempMax : data.main.temp_max;
   const now = Math.floor(Date.now() / 1000);
   const dayProgress =
     now < sunrise ? 0 : now > sunset ? 1 : (now - sunrise) / (sunset - sunrise);
 
-  set("locName", `${d.name}, ${d.sys.country}`);
-  set("tempVal", `${Math.round(d.main.temp_max)}° / ${Math.round(d.main.temp_min)}°`);
-  set("descVal", d.weather[0].description);
-  set("feelsLike", `Sensação térmica: ${Math.round(d.main.feels_like)}°C`);
+  set("locName", `${data.name}, ${data.sys.country}`);
+  set("tempVal", `${Math.round(dailyMax)}° / ${Math.round(dailyMin)}°`);
+  set("descVal", data.weather[0].description);
+  set("feelsLike", `Sensação térmica: ${Math.round(data.main.feels_like)}°C`);
   document.getElementById("mainIcon").textContent = icon;
 
   set("humidity", `${data.main.humidity}%`);
@@ -261,7 +263,7 @@ async function fetchWeather(lat, lon) {
     currentWeatherData = currentData;
     tomorrowPageData = createTomorrowPageData(currentData, forecastData);
 
-    renderWeather(currentData);
+    renderWeather(currentData, todaySummary);
     renderTomorrowForecast(extractTomorrowFromForecast(forecastData));
     renderTomorrowCard(tomorrowPageData);
   } catch (e) {
@@ -298,4 +300,30 @@ function loadWeather() {
   );
 }
 
-loadWeather();
+// Executar apenas em ambiente de navegador (não em testes)
+if (typeof window !== 'undefined' && typeof module === 'undefined') {
+  loadWeather();
+}
+
+// Exportar para testes (Node.js/Jest)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    show,
+    hide,
+    set,
+    fmtTime,
+    animateSunArc,
+    getLocalDateByOffset,
+    extractDaySummaryFromForecast,
+    extractTomorrowFromForecast,
+    renderWeather,
+    showError,
+    renderTomorrowForecast,
+    createTomorrowPageData,
+    renderTomorrowCard,
+    fetchWeather,
+    loadWeather,
+    WEATHER_CODES,
+    API_KEY
+  };
+}
