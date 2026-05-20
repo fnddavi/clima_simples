@@ -1,4 +1,4 @@
-console.log("Clima app loaded");
+console.log("App de clima subiu...");
 
 const API_KEY = "e5681d06a9ea812ed966648cd8224afc";
 
@@ -43,7 +43,7 @@ function fmtTime(unix, tz) {
     });
   }
 
-  // Se 'tz' for uma string (como "America/Sao_Paulo" do seu loadDemo) ou indefinido
+  // Se 'tz' for uma string (como "America/Sao_Paulo") ou indefinido
   return new Date(unix * 1000).toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
