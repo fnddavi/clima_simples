@@ -1,4 +1,4 @@
-# 🌤 Clima Agora
+# 🌤 [Clima Agora](https://clima-simples.netlify.app/)
 
 App mobile de clima minimalista, feito em HTML/CSS/JS puro — sem frameworks, sem dependências, zero build step.
 
