@@ -1,4 +1,4 @@
-console.log("App de clima subiu...");
+console.log("App rodando...");
 
 const API_KEY = "e5681d06a9ea812ed966648cd8224afc";
 
@@ -42,6 +42,7 @@ function fmtTime(unix, tz) {
   });
 }
 
+// Animacao do arco
 function animateSunArc(progress) {
   const arc = document.getElementById("sunArcFill");
   const dot = document.getElementById("sunDot");
@@ -59,12 +60,14 @@ function animateSunArc(progress) {
   dot.setAttribute("cy", Math.max(5, Math.min(58, y)));
 }
 
+
 function getLocalDateByOffset(unixSeconds, tzOffsetSeconds) {
   return new Date((unixSeconds + tzOffsetSeconds) * 1000)
     .toISOString()
     .slice(0, 10);
 }
 
+// Extrai resumo do dia da previsão
 function extractDaySummaryFromForecast(
   forecastData,
   dayOffset = 0,
@@ -92,7 +95,9 @@ function extractDaySummaryFromForecast(
   }
 
   const tempsMin = dayItems.map((item) => item.main.temp_min);
+  console.log("Temperaturas mínimas do dia:", tempsMin);
   const tempsMax = dayItems.map((item) => item.main.temp_max);
+  console.log("Temperaturas máximas do dia:", tempsMax);
 
   if (currentData && dayOffset === 0) {
     tempsMin.push(currentData.main.temp);
@@ -134,8 +139,12 @@ function renderWeather(data, todaySummary = null) {
     data.customLocationName || `${data.name}, ${data.sys.country}`,
   );
 
-  set("tempVal", `${Math.round(dailyMax)}° / ${Math.round(dailyMin)}°`);
-
+  // Exibe a temperatura atual em destaque
+  set("tempVal", `${Math.round(data.main.temp)}°C`); 
+  
+  // Exibe a previsão de máxima e mínima logo abaixo
+  set("tempMinMaxHoje", `↑ ${Math.round(dailyMax)}° / ↓ ${Math.round(dailyMin)}°`);
+  
   set("descVal", data.weather[0].description);
 
   set("feelsLike", `Sensação térmica: ${Math.round(data.main.feels_like)}°C`);
