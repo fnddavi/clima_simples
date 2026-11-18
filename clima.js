@@ -1,7 +1,5 @@
 console.log("App rodando...");
 
-const API_KEY = "e5681d06a9ea812ed966648cd8224afc";
-
 const WEATHER_CODES = {
   200: "⛈",   201: "⛈",   202: "⛈",   210: "🌩",   211: "🌩",   212: "🌩",   221: "🌩",   230: "⛈",   231: "⛈",   232: "⛈",
   300: "🌦",   301: "🌦",   302: "🌧",   310: "🌦",   311: "🌧",   312: "🌧",   313: "🌦",   314: "🌧",   321: "🌦",
@@ -317,40 +315,19 @@ function renderTomorrowCard(data) {
 }
 
 async function fetchWeather(lat, lon) {
-  if (!API_KEY || API_KEY.trim() === "") {
-    showError(
-      "Erro de Configuração",
-      "A chave da API (API_KEY) está vazia ou não foi configurada.",
-      "🔑",
-    );
-
-    return;
-  }
-
   try {
-    const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
-
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
-
-    const [currentRes, forecastRes, detailedLocation] = await Promise.all([
-      fetch(currentUrl),
-      fetch(forecastUrl),
+    const params = new URLSearchParams({ lat, lon });
+    const [weatherRes, detailedLocation] = await Promise.all([
+      fetch(`/.netlify/functions/weather?${params}`),
       getDetailedLocation(lat, lon),
     ]);
 
-    if (!currentRes.ok || !forecastRes.ok) {
-      if (currentRes.status === 401 || forecastRes.status === 401) {
-        throw new Error("API key inválida");
-      }
-
-      const status = !currentRes.ok ? currentRes.status : forecastRes.status;
-
-      throw new Error(`Erro ${status}`);
+    const weatherData = await weatherRes.json();
+    if (!weatherRes.ok) {
+      throw new Error(weatherData.error || `Erro ${weatherRes.status}`);
     }
 
-    const currentData = await currentRes.json();
-
-    const forecastData = await forecastRes.json();
+    const { current: currentData, forecast: forecastData } = weatherData;
 
     console.log("Dados atuais (RAW):", currentData);
 
@@ -460,6 +437,5 @@ if (typeof module !== "undefined" && module.exports) {
     fetchWeather,
     loadWeather,
     WEATHER_CODES,
-    API_KEY,
   };
 }

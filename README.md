@@ -31,35 +31,41 @@ clima_simples/
 ├── index.html   # Estrutura da interface
 ├── clima.css    # Estilos, animações e variáveis visuais
 ├── clima.js     # Localização, chamadas de API e renderização
+├── netlify/
+│   └── functions/
+│       └── weather.js  # Proxy serverless para a API do clima
 └── favicon.svg  # Ícone do site
 ```
 
 ## Como executar
 
-O aplicativo precisa de uma chave do OpenWeatherMap e de acesso à localização. A geolocalização requer uma origem segura: use `localhost` durante o desenvolvimento ou HTTPS quando publicado. Por exemplo, com Python instalado:
+O aplicativo precisa de uma chave do OpenWeatherMap configurada no servidor e de acesso à localização. Como as funções serverless fazem parte da aplicação, use o Netlify CLI para desenvolver localmente:
 
 ```bash
-python3 -m http.server 8000
+npx netlify-cli dev
 ```
 
-Depois, abra `http://localhost:8000` no navegador e permita o acesso à localização.
+O comando disponibiliza o site e as funções em `http://localhost:8888`. A geolocalização funciona em `localhost`; permita o acesso quando solicitado.
 
 ### Configurar a API
 
 1. Crie uma conta no [OpenWeatherMap](https://openweathermap.org/api) e obtenha uma chave que permita usar os endpoints de clima atual e previsão de 5 dias/3 horas.
-2. No arquivo `clima.js`, configure a constante `API_KEY`:
+2. Para desenvolvimento local, crie um arquivo `.env` na raiz do projeto:
 
-   ```js
-   const API_KEY = "sua-chave";
+   ```bash
+   OPENWEATHER_API_KEY=sua-chave
    ```
 
-3. Recarregue o aplicativo. A previsão de amanhã depende dos dados retornados pelo endpoint de previsão.
+   Esse arquivo é ignorado pelo Git.
+3. Na Netlify, configure a variável `OPENWEATHER_API_KEY` nas variáveis de ambiente do site e faça um novo deploy.
 
-O aplicativo **não tem modo demo**: sem uma chave válida, os dados não são carregados. A chave usada no frontend fica visível para qualquer pessoa que acesse o site; para uma publicação, restrinja-a conforme os recursos disponíveis no provedor ou use um backend para proteger o segredo. Chaves podem levar alguns minutos para serem ativadas após a criação.
+O frontend chama a função `/.netlify/functions/weather`; ela consulta a API e retorna as condições atuais e a previsão sem enviar a chave ao navegador. A previsão de amanhã depende dos dados do endpoint de previsão. Sem uma chave válida configurada no servidor, os dados não são carregados. Chaves podem levar alguns minutos para serem ativadas após a criação.
+
+> A função mantém a chave fora do frontend, mas seu endereço é público e pode ser chamado por terceiros, o que pode consumir sua cota da API. Para este exemplo, monitore o uso da chave no OpenWeatherMap.
 
 ## Compatibilidade
 
-Requer um navegador moderno com suporte à Geolocation API, `backdrop-filter` e propriedades customizadas de CSS. A geolocalização depende também da permissão do usuário e de uma origem segura (HTTPS ou `localhost`).
+Requer Node.js para executar o Netlify CLI localmente e um navegador moderno com suporte à Geolocation API, `backdrop-filter` e propriedades customizadas de CSS. A geolocalização depende também da permissão do usuário e de uma origem segura (HTTPS ou `localhost`).
 
 ## Licença
 
