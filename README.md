@@ -1,78 +1,66 @@
 # 🌤 [Clima Agora](https://clima-simples.netlify.app/)
 
-App mobile de clima minimalista, feito em HTML/CSS/JS puro — sem frameworks, sem dependências, zero build step.
+Aplicação de clima responsiva, feita com HTML, CSS e JavaScript puro. Não usa frameworks, dependências de pacote nem etapa de build.
 
-![dark theme](https://img.shields.io/badge/tema-dark%20glassmorphism-0a0f1e?style=flat-square) ![zero deps](https://img.shields.io/badge/dependências-zero-4fc3f7?style=flat-square) ![single file](https://img.shields.io/badge/distribuição-2%20arquivos-b39ddb?style=flat-square)
-
----
+![tema dark glassmorphism](https://img.shields.io/badge/tema-dark%20glassmorphism-0a0f1e?style=flat-square) ![sem dependências de pacote](https://img.shields.io/badge/dependências-de%20pacote%20zero-4fc3f7?style=flat-square) ![HTML, CSS e JS](https://img.shields.io/badge/HTML-CSS%20%2B%20JS-b39ddb?style=flat-square)
 
 ## Funcionalidades
 
-- **Localização automática** via Geolocation API do navegador
-- **Dados em tempo real** via OpenWeatherMap (API gratuita)
-- **Modo demo** automático quando nenhuma API key está configurada — padrão: São Paulo, BR
-- Temperatura atual, sensação térmica, mín/máx do dia
-- Umidade, velocidade do vento e visibilidade
-- Cobertura de nuvens com barra de progresso animada
-- Pressão atmosférica e precipitação da última hora
-- Horários de nascer e pôr do sol com arco solar animado em SVG
-- Tratamento de erros com mensagens específicas (permissão negada, timeout, API key inválida)
-- Botão de atualização com animação de spin
+- Localização automática pela Geolocation API do navegador
+- Condições atuais e previsão para hoje e amanhã pela API do OpenWeatherMap
+- Nome detalhado da localização obtido pelo serviço de geocodificação reversa do OpenStreetMap (Nominatim)
+- Temperatura, sensação térmica, mínima e máxima, umidade, vento e visibilidade
+- Cobertura de nuvens, pressão atmosférica e precipitação da última hora
+- Horários do nascer e pôr do sol com arco solar animado em SVG
+- Mensagens de erro para problemas de localização ou da API
+- Botão para atualizar os dados
 
 ## Visual
 
-- Fundo escuro `#0a0f1e` com aurora animada em gradiente
-- Cards com glassmorphism (backdrop-filter blur)
-- Temperatura em tipografia display grande com gradiente
-- Ícone do clima animado com float suave
-- Fontes: IBM Plex Sans (display) + Public Sans (corpo)
-
----
+- Fundo escuro `#0a0f1e` com aurora em gradiente animada
+- Cards com efeito glassmorphism (`backdrop-filter`)
+- Temperatura em destaque com gradiente
+- Ícone do clima com animação suave
+- Fontes IBM Plex Sans e Public Sans, carregadas do Google Fonts
+- Layout responsivo com ajustes para áreas seguras de dispositivos móveis
 
 ## Estrutura
 
-```
+```text
 clima_simples/
-├── clima.html   # Markup e estrutura da interface
-├── clima.js     # Lógica, chamadas de API e renderização
-└── clima.css    # Estilos, animações e variáveis de tema
+├── index.html   # Estrutura da interface
+├── clima.css    # Estilos, animações e variáveis visuais
+├── clima.js     # Localização, chamadas de API e renderização
+└── favicon.svg  # Ícone do site
 ```
 
----
+## Como executar
 
-## Como usar
+O aplicativo precisa de uma chave do OpenWeatherMap e de acesso à localização. A geolocalização requer uma origem segura: use `localhost` durante o desenvolvimento ou HTTPS quando publicado. Por exemplo, com Python instalado:
 
-### Modo demo (sem API key)
-
-Abra `clima.html` diretamente no navegador. O app exibirá dados simulados de São Paulo automaticamente.
-
-### Com dados reais
-
-1. Crie uma conta gratuita em [openweathermap.org](https://openweathermap.org/api)
-2. Gere uma API key (plano *Current Weather* é suficiente)
-3. Edite `clima.html` e insira sua chave na linha:
-
-```js
-const API_KEY = ""; // substitua pelo seu token
+```bash
+python3 -m http.server 8000
 ```
 
-4. Abra o arquivo no navegador e permita o acesso à localização quando solicitado
+Depois, abra `http://localhost:8000` no navegador e permita o acesso à localização.
 
-> **Nota:** A API key do OpenWeatherMap pode levar alguns minutos para ativar após o cadastro.
+### Configurar a API
 
----
+1. Crie uma conta no [OpenWeatherMap](https://openweathermap.org/api) e obtenha uma chave que permita usar os endpoints de clima atual e previsão de 5 dias/3 horas.
+2. No arquivo `clima.js`, configure a constante `API_KEY`:
+
+   ```js
+   const API_KEY = "sua-chave";
+   ```
+
+3. Recarregue o aplicativo. A previsão de amanhã depende dos dados retornados pelo endpoint de previsão.
+
+O aplicativo **não tem modo demo**: sem uma chave válida, os dados não são carregados. A chave usada no frontend fica visível para qualquer pessoa que acesse o site; para uma publicação, restrinja-a conforme os recursos disponíveis no provedor ou use um backend para proteger o segredo. Chaves podem levar alguns minutos para serem ativadas após a criação.
 
 ## Compatibilidade
 
-Funciona em qualquer navegador moderno com suporte a:
-- Geolocation API
-- `backdrop-filter` (blur)
-- CSS custom properties
-
-Otimizado para mobile (viewport fixo, `safe-area-inset`, `100svh`). Funciona igualmente bem no desktop.
-
----
+Requer um navegador moderno com suporte à Geolocation API, `backdrop-filter` e propriedades customizadas de CSS. A geolocalização depende também da permissão do usuário e de uma origem segura (HTTPS ou `localhost`).
 
 ## Licença
 
-MIT — use, modifique e distribua à vontade.
+MIT — consulte o arquivo [LICENSE](LICENSE).
